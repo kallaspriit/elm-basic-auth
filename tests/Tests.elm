@@ -1,9 +1,9 @@
-module Tests exposing (..)
+module Tests exposing (all)
 
-import Test exposing (..)
+import BasicAuth
 import Expect
 import Http
-import BasicAuth
+import Test exposing (..)
 
 
 all : Test
