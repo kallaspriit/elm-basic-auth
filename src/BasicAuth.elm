@@ -1,20 +1,24 @@
-module BasicAuth
-    exposing
-        ( buildAuthorizationHeader
-        , buildAuthorizationToken
-        )
+module BasicAuth exposing
+    ( buildAuthorizationHeader
+    , buildAuthorizationToken
+    )
 
 {-| A helper library for Elm that provides building basic authentication token and header.
 
+
 # Http header
+
 @docs buildAuthorizationHeader
 
+
 # Just the string token
+
 @docs buildAuthorizationToken
+
 -}
 
-import Http
 import Base64
+import Http
 
 
 {-| Builds an authorization header based on provided username and password.
@@ -24,7 +28,7 @@ This can be put directly into the Http.request headers array.
     loadAuthenticated id =
         let
             url =
-                "https://reqres.in/api/users/" ++ (toString id)
+                "https://reqres.in/api/users/" ++ toString id
 
             request =
                 Http.request
@@ -38,11 +42,12 @@ This can be put directly into the Http.request headers array.
                     , withCredentials = False
                     }
         in
-            Http.send UserResult request
+        Http.send UserResult request
+
 -}
 buildAuthorizationHeader : String -> String -> Http.Header
 buildAuthorizationHeader username password =
-    Http.header "Authorization" ("Basic " ++ (buildAuthorizationToken username password))
+    Http.header "Authorization" ("Basic " ++ buildAuthorizationToken username password)
 
 
 {-| Builds just the authorization token based on provided username and password.
@@ -51,13 +56,4 @@ Use buildAuthorizationHeader if you need the header anyway.
 -}
 buildAuthorizationToken : String -> String -> String
 buildAuthorizationToken username password =
-    let
-        result =
-            Base64.encode (username ++ ":" ++ password)
-    in
-        case result of
-            Ok value ->
-                value
-
-            Err error ->
-                "error: " ++ error
+    Base64.encode (username ++ ":" ++ password)

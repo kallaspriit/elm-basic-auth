@@ -1,15 +1,16 @@
-module Example exposing (..)
+module Example exposing (Model, Msg(..), decodeGifUrl, init, loadUser, main, subscriptions, update, view)
 
+import BasicAuth exposing (..)
+import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import Json.Decode as Decode
-import BasicAuth exposing (..)
 
 
 main =
-    Html.program
+    Browser.element
         { init = init 1
         , view = view
         , update = update
@@ -27,8 +28,8 @@ type alias Model =
     }
 
 
-init : Int -> ( Model, Cmd Msg )
-init id =
+init : Int -> () -> ( Model, Cmd Msg )
+init id flags =
     ( Model id ""
     , loadUser id
     )
@@ -51,10 +52,10 @@ update msg model =
                 newId =
                     model.id + 1
             in
-                ( { model | id = newId }, loadUser newId )
+            ( { model | id = newId }, loadUser newId )
 
         UserResult (Ok newUrl) ->
-            ( Model model.id newUrl, Cmd.none )
+            ( { model | avatarUrl = newUrl }, Cmd.none )
 
         UserResult (Err _) ->
             ( model, Cmd.none )
@@ -67,7 +68,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ h2 [] [ text ("User #" ++ (toString model.id)) ]
+        [ h2 [] [ text ("User #" ++ String.fromInt model.id) ]
         , button [ onClick MorePlease ] [ text "More Please!" ]
         , br [] []
         , img [ src model.avatarUrl ] []
@@ -91,22 +92,19 @@ loadUser : Int -> Cmd Msg
 loadUser id =
     let
         url =
-            "https://reqres.in/api/users/" ++ (toString id)
-
-        request =
-            Http.request
-                { method = "GET"
-                , headers =
-                    -- add the authorization header
-                    [ buildAuthorizationHeader "username" "password" ]
-                , url = url
-                , body = Http.emptyBody
-                , expect = Http.expectJson decodeGifUrl
-                , timeout = Nothing
-                , withCredentials = False
-                }
+            "https://reqres.in/api/users/" ++ String.fromInt id
     in
-        Http.send UserResult request
+    Http.request
+        { method = "GET"
+        , headers =
+            -- add the authorization header
+            [ buildAuthorizationHeader "username" "password" ]
+        , url = url
+        , body = Http.emptyBody
+        , expect = Http.expectJson UserResult decodeGifUrl
+        , timeout = Nothing
+        , tracker = Nothing
+        }
 
 
 decodeGifUrl : Decode.Decoder String
